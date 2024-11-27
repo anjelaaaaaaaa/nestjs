@@ -4,14 +4,18 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BaseTable } from '../../common/entity/base.table';
 import { MovieDetail } from './movie-detail.entity';
 import { JoinColumn } from 'typeorm';
+import { Transform } from 'class-transformer';
 import { Director } from '../../director/entity/director.entity';
 import { Genre } from '../../genre/entities/genre.entity';
+import { User } from '../../user/entities/user.entity';
+import { MovieUserLike } from './movie-user-like.entity';
 
 // ManyToOne Director
 // OneToOne MovieDetail
@@ -22,10 +26,14 @@ export class Movie extends BaseTable {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    unique: true,
-  })
+  @ManyToOne(() => User, (user) => user.createdMovies)
+  creator: User;
+
+  @Column({ unique: true })
   title: string;
+
+  @Column({ default: 0 })
+  likeCount: number;
 
   @OneToOne(() => MovieDetail, (movieDetail) => movieDetail.id, {
     cascade: true,
@@ -33,6 +41,11 @@ export class Movie extends BaseTable {
   })
   @JoinColumn()
   detail: MovieDetail;
+
+  @Column()
+  // host url 도 붙여서 보내줌 ! get movie 할때
+  @Transform(({ value }) => `http://localhost:3000/${value}`)
+  movieFilePath: string;
 
   @ManyToOne(() => Director, (director) => director.movies, {
     cascade: true,
@@ -43,4 +56,7 @@ export class Movie extends BaseTable {
   @ManyToMany(() => Genre, (genre) => genre.movies)
   @JoinTable()
   genres: Genre[];
+
+  @OneToMany(() => MovieUserLike, (mul) => mul.movie)
+  likedUsers: MovieUserLike[];
 }

@@ -47,6 +47,9 @@ export class BearerTokenMiddleware implements NestMiddleware {
       req.user = payload;
       next();
     } catch (e) {
+      if (e.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('토큰이 만료됐습니다.');
+      }
       /**
        * 어차피 미들웨어에서 작업 끝나면 authGuard로 가기때문에 req.user가 없다면
        * 거기서 에러를 던질거임.
