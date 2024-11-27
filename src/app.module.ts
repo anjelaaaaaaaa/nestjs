@@ -21,8 +21,15 @@ import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { envVariables } from './common/const/env.const';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
+import { RbacGuard } from './auth/guard/rbac.guard';
+import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
+import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
+import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { MovieUserLike } from './movie/entity/movie-user-like.entity';
 
 @Module({
   imports: [
@@ -51,7 +58,7 @@ import { AuthGuard } from './auth/guard/auth.guard';
         username: configService.get<string>(envVariables.dbUsername),
         password: configService.get<string>(envVariables.dbPassword),
         database: configService.get<string>(envVariables.dbDatabase),
-        entities: [Movie, MovieDetail, Director, Genre, User],
+        entities: [Movie, MovieDetail, Director, Genre, User, MovieUserLike],
         synchronize: true,
       }),
       inject: [ConfigService],
@@ -67,6 +74,16 @@ import { AuthGuard } from './auth/guard/auth.guard';
     //   entities: [],
     //   synchronize: true,
     // }),
+    ServeStaticModule.forRoot({
+      /**
+       * rootPath를 public 까지 해두면 public 하위 경로부터 작성하면됨.
+       * prcess.cwd로 하면 아래 src의 코드까지 다 조회가능하므로 보안문제 발생함.
+       * 근데 public 하위 경로는 /movie 인데 /movie라는 api가 있음..
+       * 그래서 앞에 무조건 /public/이라는 suffix를 붙이게 해줌.
+       */
+      rootPath: join(process.cwd(), 'public'),
+      serveRoot: '/public/',
+    }),
     MovieModule,
     DirectorModule,
     GenreModule,
@@ -79,6 +96,22 @@ import { AuthGuard } from './auth/guard/auth.guard';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RbacGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseTimeInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: ForbiddenExceptionFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: QueryFailedExceptionFilter,
     },
   ],
 })
