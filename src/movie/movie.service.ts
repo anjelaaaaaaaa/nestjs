@@ -46,7 +46,6 @@ export class MovieService {
   async findRecent() {
     const cacheData = await this.cacheManager.get('MOVIE_RECENT');
     if (cacheData) {
-      console.log('캐시가져옴 !');
       return cacheData;
     }
     const data = await this.movieRepository.find({

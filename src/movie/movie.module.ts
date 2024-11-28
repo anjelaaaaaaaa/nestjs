@@ -25,9 +25,6 @@ import { CacheModule } from '@nestjs/cache-manager';
       User,
       MovieUserLike,
     ]),
-    CacheModule.register({
-      ttl: 10000,
-    }),
     CommonModule,
     MulterModule.register({
       storage: diskStorage({

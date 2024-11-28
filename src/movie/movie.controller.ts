@@ -30,6 +30,7 @@ import { UserId } from '../user/decorator/user-id.decorator';
 import { QueryRunner } from '../common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
 import { CacheInterceptor as CI, CacheKey } from '@nestjs/cache-manager';
+import { Throttle } from '../common/decorator/throttle.decorator';
 
 @Controller('movie')
 // class-transformer를 사용하려면 적용해야함
@@ -39,6 +40,10 @@ export class MovieController {
 
   @Public()
   @Get()
+  @Throttle({
+    count: 5,
+    unit: 'minute',
+  })
   getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
     return this.movieService.findAll(dto, userId);
   }
@@ -51,7 +56,6 @@ export class MovieController {
   @UseInterceptors(CI)
   @CacheKey('getMoviesRecent') // 캐시키를 일괄적으로 적용. 쿼리 파라미터 변경되어도 호출은 한번만 됨.
   getMoviesRecent() {
-    console.log('get movies recent() 실행');
     return this.movieService.findRecent();
   }
 
