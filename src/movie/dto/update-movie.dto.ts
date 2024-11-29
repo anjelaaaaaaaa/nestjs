@@ -1,4 +1,9 @@
-import { PartialType } from '@nestjs/mapped-types';
+/**
+ * partialType을 nestjs/mapped-types에서 불러오면 swagger에
+ * dto의 형식이 안나옴. => partialType을 swagger에서 불러오면 해결 !
+ */
+// import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { CreateMovieDto } from './create-movie.dto';
 import {
   ArrayNotEmpty,

@@ -10,16 +10,12 @@ import {
   Post,
   Query,
   UseGuards,
-  Request,
   UseInterceptors,
-  UploadedFile,
-  UploadedFiles,
-  BadRequestException,
+  VERSION_NEUTRAL,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
-import { MovieTitleValidationPipe } from './pipe/movie-title-validation.pipe';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { Public } from '../auth/decorator/public.decorator';
 import { RBAC } from '../auth/decorator/rbac.decorator';
@@ -31,10 +27,31 @@ import { QueryRunner } from '../common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
 import { CacheInterceptor as CI, CacheKey } from '@nestjs/cache-manager';
 import { Throttle } from '../common/decorator/throttle.decorator';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-@Controller('movie')
+@Controller({
+  // path: 'movie',
+  // version: '2',
+})
+export class MovieControllerV2 {
+  @Get()
+  gtMovies() {
+    console.log('버전 투 호출 ');
+    return 'version 2';
+  }
+}
+
+@Controller(
+  'movie',
+  // {
+  // path: 'movie',
+  // // version: VERSION_NEUTRAL,  버전 뉴트럴로 진행하면 default가 생기는거임.
+  // version: '1',
+  // }
+)
 // class-transformer를 사용하려면 적용해야함
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiBearerAuth()
 export class MovieController {
   constructor(private readonly movieService: MovieService) {}
 
@@ -44,6 +61,18 @@ export class MovieController {
     count: 5,
     unit: 'minute',
   })
+  @ApiOperation({
+    description: 'movie를 pagination 하는 api',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '성공적으로 api pagination을 실행 했을 때',
+  })
+  @ApiResponse({
+    status: 400,
+    description: '에러',
+  })
+  // @Version('5') 이렇게 메서드에도 버전 설정해줄 수 있음.
   getMovies(@Query() dto: GetMoviesDto, @UserId() userId?: number) {
     return this.movieService.findAll(dto, userId);
   }

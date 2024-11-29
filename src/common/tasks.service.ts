@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { readdir, unlink } from 'fs/promises';
 import { join, parse } from 'path';
@@ -7,26 +7,29 @@ import { Repository } from 'typeorm';
 import { Movie } from '../movie/entity/movie.entity';
 import { Logger } from '@nestjs/common';
 import { DefaultLogger } from './logger/default.logger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class TasksService {
-  private readonly logger = new Logger(TasksService.name);
+  // private readonly logger = new Logger(TasksService.name);
 
   constructor(
     @InjectRepository(Movie)
     private readonly movieRepository: Repository<Movie>,
     private readonly schedulerRegistry: SchedulerRegistry,
     // private readonly logger: DefaultLogger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
   ) {}
 
-  // @Cron('0 0 0 * * *')
+  // @Cron('*/3 * * * * *')
   logEverySecond() {
-    this.logger.fatal('FATAL level log');
-    this.logger.error('ERROR level log');
-    this.logger.warn('WARN level log');
-    this.logger.log('LOG level log');
-    this.logger.debug('DEBUG level log');
-    this.logger.verbose('VERBOSE level log');
+    this.logger.fatal('FATAL level log', null, TasksService.name);
+    this.logger.error('ERROR level log', null, TasksService.name);
+    this.logger.warn('WARN level log', TasksService.name);
+    this.logger.log('LOG level log', TasksService.name);
+    this.logger.debug('DEBUG level log', TasksService.name);
+    this.logger.verbose('VERBOSE level log', TasksService.name);
   }
 
   // @Cron('* * * * * *')
