@@ -4,6 +4,6 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "plugins": ["@nestjs/swagger"] // swagger 에 dto 같은 파라미터 타입 다 자동으로 만들어줌
+    "plugins": ["@nestjs/swagger"]
   }
 }
