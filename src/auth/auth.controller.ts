@@ -43,10 +43,9 @@ export class AuthController {
 
   // Refresh token 을 헤더로 넣어서 access token 재발급
   @Post('token/access')
-  async rotateAccessToken(@Headers('authorization') token: string) {
-    const payload = await this.authService.parseBearerToken(token, true);
+  async rotateAccessToken(@Request() req) {
     return {
-      accessToken: await this.authService.issueToken(payload, false),
+      accessToken: await this.authService.issueToken(req.user, false),
     };
   }
 
@@ -64,10 +63,10 @@ export class AuthController {
 
   // jwt strategy 는 토큰으로 인증
   // @UseGuards(AuthGuard('jwt'))
-  @UseGuards(JwtAuthGuard)
-  @Get('private')
-  async private(@Request() req) {
-    // passport의 validate에서 반환하는 값은 request.user에 담겨져서 옴
-    return req.user;
-  }
+  // @UseGuards(JwtAuthGuard)
+  // @Get('private')
+  // async private(@Request() req) {
+  //   // passport의 validate에서 반환하는 값은 request.user에 담겨져서 옴
+  //   return req.user;
+  // }
 }
