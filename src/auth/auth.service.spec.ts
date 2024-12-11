@@ -254,6 +254,8 @@ describe('AuthService', () => {
     const token = 'token';
 
     beforeEach(() => {
+      /// 왜 configService는 mockConfigService를 불러오고
+      /// jwtService는 mockJwtService가 아닌 jwtService를 불러오는지 ?
       jest.spyOn(mockConfigService, 'get').mockReturnValue('secret');
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue(token);
     });

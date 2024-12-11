@@ -1,6 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DirectorService } from './director.service';
 
+const mockDirectorRepository = {
+  save: jest.fn(),
+  find: jest.fn(),
+  findOne: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+};
+
 describe('DirectorService', () => {
   let service: DirectorService;
 
