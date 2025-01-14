@@ -8,24 +8,23 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MovieModule } from './movie/movie.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConditionalModule, ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { Movie } from './movie/entity/movie.entity';
 import { MovieDetail } from './movie/entity/movie-detail.entity';
 import { DirectorModule } from './director/director.module';
 import { Director } from './director/entity/director.entity';
 import { GenreModule } from './genre/genre.module';
-import { Genre } from './genre/entities/genre.entity';
+import { Genre } from './genre/entity/genre.entity';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { User } from './user/entities/user.entity';
+import { User } from './user/entity/user.entity';
 import { envVariables } from './common/const/env.const';
 import { BearerTokenMiddleware } from './auth/middleware/bearer-token.middleware';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { RbacGuard } from './auth/guard/rbac.guard';
 import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
-import { ForbiddenExceptionFilter } from './common/filter/forbidden.filter';
 import { QueryFailedExceptionFilter } from './common/filter/query-failed.filter';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -34,7 +33,12 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottleInterceptor } from './common/interceptor/throttle.interceptor';
 import { ScheduleModule } from '@nestjs/schedule';
 import { WinstonModule } from 'nest-winston';
+import { ChatModule } from './chat/chat.module';
 import * as winston from 'winston';
+import { Chat } from './chat/entity/chat.entity';
+import { ChatRoom } from './chat/entity/chat-room.entity';
+import { WorkerModule } from './worker/worker.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -50,24 +54,45 @@ import * as winston from 'winston';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_DATABASE: Joi.string().required(),
+        DB_URL: Joi.string().required(),
         HASH_ROUNDS: Joi.number().required(),
         ACCESS_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_SECRET: Joi.string().required(),
+        AWS_SECRET_ACCESS_KEY: Joi.string().required(),
+        AWS_ACCESS_KEY_ID: Joi.string().required(),
+        AWS_REGION: Joi.string().required(),
+        BUCKET_NAME: Joi.string().required(),
       }),
     }),
+    MongooseModule.forRoot(
+      'mongodb+srv://test:test@nestjsmongo.kfnfa.mongodb.net/?retryWrites=true&w=majority&appName=NestJSMongo',
+    ),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
+        url: configService.get<string>(envVariables.dbUrl),
         type: configService.get<string>(envVariables.dbType) as 'postgres',
-        host: configService.get<string>(envVariables.dbHost),
-        port: configService.get<number>(envVariables.dbPort),
-        username: configService.get<string>(envVariables.dbUsername),
-        password: configService.get<string>(envVariables.dbPassword),
-        database: configService.get<string>(envVariables.dbDatabase),
-        entities: [Movie, MovieDetail, Director, Genre, User, MovieUserLike],
-        synchronize: true,
-        ssl: {
-          rejectUnauthorized: false,
-        },
+
+        // host: configService.get<string>(envVariables.dbHost),
+        // port: configService.get<number>(envVariables.dbPort),
+        // username: configService.get<string>(envVariables.dbUsername),
+        // password: configService.get<string>(envVariables.dbPassword),
+        // database: configService.get<string>(envVariables.dbDatabase),
+        entities: [
+          Movie,
+          MovieDetail,
+          Director,
+          Genre,
+          User,
+          MovieUserLike,
+          Chat,
+          ChatRoom,
+        ],
+        synchronize: configService.get<string>(envVariables.env) !== 'prod',
+        ...(configService.get<string>(envVariables.env) === 'prod' && {
+          ssl: {
+            rejectUnauthorized: false,
+          },
+        }),
       }),
       inject: [ConfigService],
     }),
@@ -133,6 +158,11 @@ import * as winston from 'winston';
     GenreModule,
     AuthModule,
     UserModule,
+    ChatModule,
+    ConditionalModule.registerWhen(
+      WorkerModule,
+      (env: NodeJS.ProcessEnv) => Number(env['PORT']) === 3001,
+    ),
   ],
   controllers: [AppController],
   providers: [

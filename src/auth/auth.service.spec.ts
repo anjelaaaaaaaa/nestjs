@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { Repository } from 'typeorm';
-import { Role, User } from '../user/entities/user.entity';
+import { Role, User } from '../user/entity/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';

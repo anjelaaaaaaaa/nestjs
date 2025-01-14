@@ -5,26 +5,33 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Role, User } from '../user/entities/user.entity';
-import { Repository } from 'typeorm';
+// import { InjectRepository } from '@nestjs/typeorm';
+// import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { envVariables } from '../common/const/env.const';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { UserService } from '../user/user.service';
+// import { PrismaService } from '../common/prisma.service';
+import { Role } from '@prisma/client';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from '../user/schema/user.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    // @InjectRepository(User)
+    // private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    // private readonly prisma: PrismaService,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
   ) {}
 
   async tokenBlock(token: string) {
@@ -116,14 +123,26 @@ export class AuthService {
   }
 
   async authenticate(email: string, password: string) {
-    const user = await this.userRepository.findOne({
-      where: {
+    const user = await this.userModel.findOne(
+      {
         email,
       },
-    });
+      {
+        password: 1,
+      },
+    );
+    // const user = await this.prisma.user.findUnique({
+    //   where: { email },
+    // });
+    // const user = await this.userRepository.findOne({
+    //   where: {
+    //     email,
+    //   },
+    // });
     if (!user) {
       throw new NotFoundException('잘못된 로그인 정보입니다.');
     }
+    console.log(user);
     const passOk = await bcrypt.compare(password, user.password);
     if (!passOk) {
       throw new BadRequestException('잘못된 로그인 정보입니다.');
@@ -131,7 +150,8 @@ export class AuthService {
     return user;
   }
 
-  async issueToken(user: { id: number; role: Role }, isRefreshToken: boolean) {
+  async issueToken(user: { _id: any; role: Role }, isRefreshToken: boolean) {
+    console.log('?');
     const refreshTokenSecret = this.configService.get<string>(
       envVariables.refreshTokenSecret,
     );
@@ -140,7 +160,7 @@ export class AuthService {
     );
     return await this.jwtService.signAsync(
       {
-        sub: user.id,
+        sub: user._id,
         role: user.role,
         type: isRefreshToken ? 'refresh' : 'access',
       },
@@ -153,6 +173,7 @@ export class AuthService {
 
   async loginUser(rawToken: string) {
     const { email, password } = this.parseBasicToken(rawToken);
+    console.log('gg');
     const user = await this.authenticate(email, password);
     return {
       refreshToken: await this.issueToken(user, true),

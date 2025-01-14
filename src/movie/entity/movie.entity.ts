@@ -13,8 +13,8 @@ import { MovieDetail } from './movie-detail.entity';
 import { JoinColumn } from 'typeorm';
 import { Transform } from 'class-transformer';
 import { Director } from '../../director/entity/director.entity';
-import { Genre } from '../../genre/entities/genre.entity';
-import { User } from '../../user/entities/user.entity';
+import { Genre } from '../../genre/entity/genre.entity';
+import { User } from '../../user/entity/user.entity';
 import { MovieUserLike } from './movie-user-like.entity';
 
 // ManyToOne Director

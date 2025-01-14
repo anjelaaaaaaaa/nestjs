@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { Movie } from './movie.entity';
-import { User } from '../../user/entities/user.entity';
+import { User } from '../../user/entity/user.entity';
 
 /**
  * user와 movie의

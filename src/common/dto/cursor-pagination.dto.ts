@@ -36,5 +36,5 @@ export class CursorPaginationDto {
     description: '가져올 데이터 갯수',
     example: 3,
   })
-  take?: number = 5;
+  take?: number = 2;
 }

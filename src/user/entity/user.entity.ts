@@ -1,8 +1,16 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { BaseTable } from '../../common/entity/base.table';
 import { Exclude } from 'class-transformer';
 import { Movie } from '../../movie/entity/movie.entity';
 import { MovieUserLike } from '../../movie/entity/movie-user-like.entity';
+import { Chat } from '../../chat/entity/chat.entity';
+import { ChatRoom } from '../../chat/entity/chat-room.entity';
 
 export enum Role {
   admin,
@@ -37,4 +45,10 @@ export class User extends BaseTable {
 
   @OneToMany(() => MovieUserLike, (mul) => mul.user)
   likedMovies: MovieUserLike[];
+
+  @OneToMany(() => Chat, (chat) => chat.author)
+  chats: Chat[];
+
+  @ManyToMany(() => ChatRoom, (chatRoom) => chatRoom.users)
+  chatRooms: ChatRoom[];
 }

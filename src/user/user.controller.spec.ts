@@ -3,7 +3,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { describe } from 'node:test';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './entities/user.entity';
+import { User } from './entity/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 describe('UserController', () => {

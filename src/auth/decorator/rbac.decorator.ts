@@ -1,4 +1,3 @@
 import { Reflector } from '@nestjs/core';
-import { Role } from '../../user/entities/user.entity';
-
+import { Role } from '@prisma/client';
 export const RBAC = Reflector.createDecorator<Role>();

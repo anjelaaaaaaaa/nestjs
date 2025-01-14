@@ -11,7 +11,7 @@ import {
   Query,
   UseGuards,
   UseInterceptors,
-  VERSION_NEUTRAL,
+  Request,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { CreateMovieDto } from './dto/create-movie.dto';
@@ -19,7 +19,6 @@ import { UpdateMovieDto } from './dto/update-movie.dto';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { Public } from '../auth/decorator/public.decorator';
 import { RBAC } from '../auth/decorator/rbac.decorator';
-import { Role } from '../user/entities/user.entity';
 import { GetMoviesDto } from './dto/get-movies.dto';
 import { TransactionInterceptor } from '../common/interceptor/transaction.interceptor';
 import { UserId } from '../user/decorator/user-id.decorator';
@@ -28,6 +27,7 @@ import { QueryRunner as QR } from 'typeorm';
 import { CacheInterceptor as CI, CacheKey } from '@nestjs/cache-manager';
 import { Throttle } from '../common/decorator/throttle.decorator';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
 
 @Controller({
   // path: 'movie',
@@ -90,21 +90,27 @@ export class MovieController {
 
   @Public()
   @Get('/:id')
-  getMovieById(@Param('id', ParseIntPipe) id: number) {
+  getMovieById(@Param('id', ParseIntPipe) id: number, @Request() request: any) {
+    const session = request.session;
+    console.log(session);
     return this.movieService.findOne(id);
   }
 
   @RBAC(Role.admin)
   @Post()
   @UseGuards(AuthGuard)
-  @UseInterceptors(TransactionInterceptor)
+  // @UseInterceptors(TransactionInterceptor)
   async createMovie(
     @Body() createMovieDto: CreateMovieDto,
-    @QueryRunner() queryRunner: QR,
+    // @QueryRunner() queryRunner: QR,
     @UserId() userId: number,
     // @UploadedFile(여기에파이프적용가능)
   ) {
-    return await this.movieService.create(createMovieDto, userId, queryRunner);
+    return await this.movieService.create(
+      createMovieDto,
+      userId,
+      // queryRunner
+    );
   }
 
   @RBAC(Role.admin)

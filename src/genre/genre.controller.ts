@@ -17,7 +17,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('genre')
 @ApiBearerAuth()
-@UseInterceptors(ClassSerializerInterceptor)
+// @UseInterceptors(ClassSerializerInterceptor)
 export class GenreController {
   constructor(private readonly genreService: GenreService) {}
 
@@ -32,20 +32,17 @@ export class GenreController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.genreService.findOne(+id);
+  findOne(@Param('id') id: string) {
+    return this.genreService.findOne(id);
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: string,
-    @Body() updateGenreDto: UpdateGenreDto,
-  ) {
-    return this.genreService.update(+id, updateGenreDto);
+  update(@Param('id') id: string, @Body() updateGenreDto: UpdateGenreDto) {
+    return this.genreService.update(id, updateGenreDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: string) {
-    return this.genreService.remove(+id);
+  remove(@Param('id') id: string) {
+    return this.genreService.remove(id);
   }
 }

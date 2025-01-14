@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Reflector } from '@nestjs/core';
-import { Role } from '../../user/entities/user.entity';
+import { Role } from '../../user/entity/user.entity';
 import { RBAC } from '../decorator/rbac.decorator';
 
 @Injectable()

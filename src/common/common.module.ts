@@ -8,7 +8,8 @@ import { v4 } from 'uuid';
 import { TasksService } from './tasks.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movie } from '../movie/entity/movie.entity';
-import { DefaultLogger } from './logger/default.logger';
+import { BullModule } from '@nestjs/bullmq';
+import { PrismaService } from './prisma.service';
 
 @Module({
   imports: [
@@ -26,9 +27,25 @@ import { DefaultLogger } from './logger/default.logger';
         },
       }),
     }),
+    /**
+     * 1. 작업들을 올려둘 queue를 redis로 사용할건데 redis endpoint 세팅을 해야함.
+     *
+     * 2. queue 등록
+     */
+    BullModule.forRoot({
+      connection: {
+        host: 'redis-16654.c340.ap-northeast-2-1.ec2.redns.redis-cloud.com',
+        port: 16654,
+        username: 'default',
+        password: 'QNxQn6VWeBqR7HPU1pI8ptOHJI4zvAPR',
+      },
+    }),
+    BullModule.registerQueue({
+      name: 'thumbnail-generation', // 실제 작업의 이름
+    }),
   ],
   controllers: [CommonController],
-  providers: [CommonService, TasksService],
-  exports: [CommonService],
+  providers: [CommonService, TasksService, PrismaService],
+  exports: [CommonService, PrismaService],
 })
 export class CommonModule {}
